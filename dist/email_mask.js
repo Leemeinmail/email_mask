@@ -63,99 +63,142 @@ var email_step = /*#__PURE__*/function () {
   function email_step(opt) {
     _classCallCheck(this, email_step);
 
-    this.name = opt['name'] ? opt['name'] : '';
-    this.val = opt['value'] ? opt['value'] : '';
+    this.name = opt['name'] ? opt['name'] : ''; //this.val = (opt['value']) ? opt['value'] : '';
+
     this.plc = opt['plc'] ? opt['plc'] : '_';
-    this.valid_symbols = opt['valid_regx'] ? opt['valid_regx'] : /[0-9A-Za-z]/;
-    this.min_length = opt['min_length'] ? opt['min_length'] : 3;
-    this.max_length = opt['max_length'] ? opt['max_length'] : 3;
-    this.next_step_symbols = opt['next_step_symbols'] ? opt['next_step_symbols'] : [' '];
+    this.valid_symbols = opt['valid_regx'] ? opt['valid_regx'] : /[0-9A-Za-z@]/;
+    this.min_length = 1;
+    this.max_length = 99;
+    this.next_step_symbols = opt['next_step_symbols'] ? opt['next_step_symbols'] : [];
     this.separator = opt['separator'] ? opt['separator'] : '';
+    this.val = [];
+
+    for (var i = 0; i < this.max_length; i++) {
+      this.val[i] = ' ';
+    }
   }
 
   _createClass(email_step, [{
-    key: "add",
-    value: function add(val) {
-      this.val += val;
-    }
-  }, {
     key: "set",
-    value: function set(val) {
-      this.val = val;
+    value: function set(pos, val) {
+      this.val.splice(pos, 0, val);
     }
   }, {
-    key: "get_full_val",
-    value: function get_full_val() {
+    key: "get_symbol",
+    value: function get_symbol() {}
+  }, {
+    key: "remove",
+    value: function remove(pos) {
+      this.val.splice(pos - 1, 1);
+    }
+  }, {
+    key: "valid",
+    value: function valid(val) {
+      if (val.length > 1 || val.search(this.valid_symbols) == -1) {
+        return false;
+      }
+
+      return true;
+    }
+  }, {
+    key: "print_value",
+    value: function print_value() {
       var value = '';
-      var diff = this.min_length - this.length();
+
+      for (var i = 0; i < this.val.length; i++) {
+        if (this.val[i] !== ' ') {
+          value += this.val[i];
+        }
+      }
+
+      var diff = this.min_length - value.length;
 
       if (diff > 0) {
-        value += this.separator + this.val + this.plc.repeat(diff);
-      } else {
-        value += this.separator + this.val;
+        value += this.plc.repeat(diff);
+      }
+
+      return value + this.separator;
+    }
+  }, {
+    key: "clear_value",
+    value: function clear_value() {
+      var value = '';
+
+      for (var i = 0; i < this.val.length; i++) {
+        if (this.val[i] !== ' ') {
+          value += this.val[i];
+        }
       }
 
       return value;
     }
   }, {
-    key: "get_only_val",
-    value: function get_only_val() {
-      return this.val;
-    }
-  }, {
-    key: "delet_last",
-    value: function delet_last() {
-      if (this.length() > 0) {
-        this.val = this.val.substring(0, this.length() - 1);
-      }
+    key: "length",
+    value: function length() {
+      var full = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
-      return this.length();
+      if (!full) {
+        return this.clear_value().length;
+      } else {
+        return this.print_value().length;
+      }
     }
   }, {
-    key: "clear",
-    value: function clear() {
-      this.val = '';
-    }
-  }, {
-    key: "check_min_value",
-    value: function check_min_value() {
-      if (this.length() >= this.min_length) {
+    key: "check_next_lvl",
+    value: function check_next_lvl(symb, pos) {
+      if (this.next_step_symbols.indexOf(symb) !== -1 && this.length() == pos && this.length() >= this.min_length) {
         return true;
       }
 
       return false;
     }
-  }, {
-    key: "check_next_step_symb",
-    value: function check_next_step_symb(symb) {
-      if (this.next_step_symbols.indexOf(symb) == -1) {
-        return false;
-      }
-
-      return true;
-    }
-  }, {
-    key: "validate",
-    value: function validate(symb) {
-      if (symb.search(this.valid_symbols) == -1) {
-        return false;
-      }
-
-      return true;
-    }
-  }, {
-    key: "length",
-    value: function length() {
-      return this.val.length;
-    }
-  }, {
-    key: "full_length",
-    value: function full_length() {
-      return this.val.length + this.separator.length;
-    }
   }]);
 
   return email_step;
+}();
+
+
+;// CONCATENATED MODULE: ./src/email_caret.js
+function email_caret_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function email_caret_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function email_caret_createClass(Constructor, protoProps, staticProps) { if (protoProps) email_caret_defineProperties(Constructor.prototype, protoProps); if (staticProps) email_caret_defineProperties(Constructor, staticProps); return Constructor; }
+
+var email_caret = /*#__PURE__*/function () {
+  function email_caret(opt) {
+    email_caret_classCallCheck(this, email_caret);
+
+    this.el = opt['el'];
+  }
+
+  email_caret_createClass(email_caret, [{
+    key: "get",
+    value: function get() {
+      var coords = {
+        start: this.el.selectionStart,
+        end: this.el.selectionEnd,
+        selected: false
+      };
+
+      if (this.el.selectionStart !== 0 && this.el.selectionEnd !== 0) {
+        var koef = this.el.selectionStart / this.el.selectionEnd;
+
+        if (koef !== 1) {
+          coords.selected = true;
+        }
+      }
+
+      return coords;
+    }
+  }, {
+    key: "set",
+    value: function set(p) {
+      this.el.setSelectionRange(p, p);
+    }
+  }]);
+
+  return email_caret;
 }();
 
 
@@ -168,305 +211,204 @@ function email_input_createClass(Constructor, protoProps, staticProps) { if (pro
 
 
 
+
 var email_input = /*#__PURE__*/function () {
   function email_input(opt) {
     email_input_classCallCheck(this, email_input);
 
     this.input = opt['input'];
-    this.step = 0;
+    this.caret = new email_caret({
+      el: opt['input']
+    });
     this.steps = [];
-    this.value = '';
-
-    if (opt['step0'] != undefined && opt['step0'] !== null) {
-      this.steps[0] = new email_step({
-        name: opt['step0']['name'] ? opt['step0']['name'] : 'name',
-        val: opt['step0']['val'] ? opt['step0']['val'] : '',
-        plc: opt['step0']['plc'] ? opt['step0']['plc'] : '_',
-        valid_regx: opt['step0']['regx'] ? opt['step0']['regx'] : /[0-9A-Za-z!#$%&'*+/./=?^_`{|}~\-]/,
-        min_length: opt['step0']['min_length'] ? opt['step0']['min_length'] : 1,
-        max_length: opt['step0']['max_length'] ? opt['step0']['max_length'] : 999,
-        next_step_symbols: opt['step0']['next_symb'] ? opt['step0']['next_symb'] : [' ', '@'],
-        separator: opt['step0']['separ'] ? opt['step0']['separ'] : ''
-      });
-    } else {
-      this.steps[0] = new email_step({
-        name: 'name',
-        val: '',
-        plc: '_',
-        valid_regx: /[0-9A-Za-z!#$%&'*+/./=?^_`{|}~\-]/,
-        min_length: 1,
-        max_length: 999,
-        next_step_symbols: [' ', '@'],
-        separator: ''
-      });
-    }
-
-    if (opt['step1'] != undefined && opt['step1'] !== null) {
-      this.steps[1] = new email_step({
-        name: opt['step1']['name'] ? opt['step1']['name'] : 'domain',
-        val: opt['step1']['val'] ? opt['step1']['val'] : '',
-        plc: opt['step1']['plc'] ? opt['step1']['plc'] : '_',
-        valid_regx: opt['step1']['regx'] ? opt['step1']['regx'] : /[0-9A-Za-z]/,
-        min_length: opt['step1']['min_length'] ? opt['step1']['min_length'] : 1,
-        max_length: opt['step1']['max_length'] ? opt['step1']['max_length'] : 999,
-        next_step_symbols: opt['step1']['next_symb'] ? opt['step1']['next_symb'] : [' ', '.'],
-        separator: opt['step1']['separ'] ? opt['step1']['separ'] : '@'
-      });
-    } else {
-      this.steps[1] = new email_step({
-        name: 'domain',
-        val: '',
-        plc: '_',
-        valid_regx: /[0-9A-Za-z]/,
-        min_length: 1,
-        max_length: 999,
-        next_step_symbols: [' ', '.'],
-        separator: '@'
-      });
-    }
-
-    if (opt['step2'] != undefined && opt['step2'] !== null) {
-      this.steps[2] = new email_step({
-        name: opt['step2']['name'] ? opt['step2']['name'] : 'zone',
-        val: opt['step2']['val'] ? opt['step2']['val'] : '',
-        plc: opt['step2']['plc'] ? opt['step2']['plc'] : '_',
-        valid_regx: opt['step2']['regx'] ? opt['step2']['regx'] : /[0-9A-Za-z]/,
-        min_length: opt['step2']['min_length'] ? opt['step2']['min_length'] : 1,
-        max_length: opt['step2']['max_length'] ? opt['step2']['max_length'] : 999,
-        next_step_symbols: opt['step2']['next_symb'] ? opt['step2']['next_symb'] : [],
-        separator: opt['step2']['separ'] ? opt['step2']['separ'] : '.'
-      });
-    } else {
-      this.steps[2] = new email_step({
-        name: 'zone',
-        val: '',
-        plc: '_',
-        valid_regx: /[0-9A-Za-z]/,
-        min_length: 1,
-        max_length: 999,
-        next_step_symbols: [],
-        separator: '.'
-      });
-    }
-
+    this.steps[0] = new email_step({
+      separator: '@',
+      next_step_symbols: ['@', ' ']
+    });
+    this.steps[1] = new email_step({
+      separator: '.',
+      next_step_symbols: ['.', ' ']
+    });
+    this.steps[2] = new email_step({});
     this.init();
   }
 
   email_input_createClass(email_input, [{
-    key: "get_value",
-    value: function get_value() {
-      var mask = "";
+    key: "foreach_steps",
+    value: function foreach_steps() {
+      var func = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
 
       for (var i = 0; i < this.steps.length; i++) {
-        mask += this.steps[i].get_full_val();
+        func(this.steps[i], i);
       }
-
-      return mask;
     }
   }, {
-    key: "mask_length_full",
-    value: function mask_length_full() {
-      var sum = 0;
+    key: "find_step",
+    value: function find_step() {
+      var caret_position = this.caret.get();
+      var step_lengths = [];
+      var step = 0;
+      this.foreach_steps(function (step, index) {
+        var val = 0;
 
-      for (var i = 0; i < this.steps.length; i++) {
-        sum += this.steps[i].length();
-
-        if (this.step >= i) {
-          sum += this.steps[i].separator.length;
+        if (index > 0) {
+          val = step.length(true) + step_lengths[index - 1];
+        } else {
+          val = step.length(true);
         }
-      }
 
-      return sum;
+        step_lengths[index] = val;
+      });
+
+      if (caret_position.start >= 0 && caret_position.start < step_lengths[0]) {
+        console.log('step 1');
+        step = 0;
+      } else if (caret_position.start >= step_lengths[0] && caret_position.start < step_lengths[1]) {
+        console.log('step 2');
+        step = 1;
+      } else if (caret_position.start >= step_lengths[1]) {
+        console.log('step 3');
+        step = 2;
+      } //console.log( step_lengths );
+      //console.log( caret_position );
+
+
+      return step;
     }
   }, {
-    key: "mask_length_only_value",
-    value: function mask_length_only_value() {
-      var sum = 0;
+    key: "find_position_in_step",
+    value: function find_position_in_step() {
+      var caret_position = this.caret.get();
+      var step_num = this.find_step();
+      var position = 0;
 
-      for (var i = 0; i < this.steps.length; i++) {
-        sum += this.steps[i].length();
+      if (step_num == 0) {
+        position = caret_position.start;
+      } else {
+        var before_steps_length = 0;
+        this.foreach_steps(function (step, index) {
+          if (index < step_num) {
+            before_steps_length += step.length(true);
+          }
+        }); //console.log(caret_position);
+        //console.log(before_steps_length);
+
+        position = caret_position.start - before_steps_length;
       }
 
-      return sum;
+      return position;
     }
   }, {
-    key: "set_cursor",
-    value: function set_cursor(p1, p2) {
-      var self = this;
-      self.input.style.caretColor = 'transparent';
-      setTimeout(function () {
-        self.input.setSelectionRange(p1 ? p1 : self.mask_length_full(), p2 ? p2 : self.mask_length_full());
-        self.input.style.caretColor = self.input.style.color;
-      }, 0);
+    key: "get_print_value",
+    value: function get_print_value() {
+      var value = '';
+      this.foreach_steps(function (step) {
+        value += step.print_value(); //console.log( step );
+      });
+      return value;
     }
   }, {
     key: "render",
     value: function render() {
-      this.input.value = this.get_value();
-      this.set_cursor();
+      this.input.value = this.get_print_value();
     }
   }, {
-    key: "render_placeholer",
-    value: function render_placeholer() {
-      this.input.placeholder = this.get_value();
-    }
-  }, {
-    key: "clear_placeholer",
-    value: function clear_placeholer() {
-      this.input.placeholder = '';
-    }
-    /*error(){
-        let self = this;
-        let border_color = self.input.style.borderColor;
-          self.input.style.borderColor = 'red';
-          setTimeout(function(){
-            self.input.style.borderColor = border_color;
-        },1500);
-    }*/
+    key: "print_placeholder",
+    value: function print_placeholder() {
+      var length = 0;
+      this.foreach_steps(function (step) {
+        length += step.length();
+      });
 
-  }, {
-    key: "check_step",
-    value: function check_step() {
-      var step_data = {
-        cursor_pos: 0,
-        cursor_pos_in_step: 0,
-        step: 0
-      };
-      var r = {};
-      r.caretPositionStart = this.input.selectionStart;
-      r.caretPositionEnd = this.input.selectionEnd;
-      r.step0 = this.steps[0].full_length();
-      r.step1 = this.steps[1].full_length() + r.step0;
-      r.step2 = this.steps[2].full_length() + r.step1;
-      r.full_value = this.steps[0].full_length() + this.steps[1].full_length() + this.steps[2].full_length();
-
-      if (r.caretPositionStart <= r.step0) {
-        step_data['cursor_pos'] = r.caretPositionStart;
-        step_data['step'] = 0;
-        step_data['cursor_pos_in_step'] = r.caretPositionStart;
-      } else if (r.caretPositionStart >= r.step0 && r.caretPositionStart <= r.step1) {
-        step_data['cursor_pos'] = r.caretPositionStart;
-        step_data['step'] = 1;
-        step_data['cursor_pos_in_step'] = r.caretPositionStart - r.step0;
-      } else if (r.caretPositionStart >= r.step1 && r.caretPositionStart <= r.step2) {
-        step_data['cursor_pos'] = r.caretPositionStart;
-        step_data['step'] = 2;
-        step_data['cursor_pos_in_step'] = r.caretPositionStart - r.step1;
+      if (length == 0) {
+        this.input.placeholder = this.get_print_value();
       }
-
-      return step_data;
+    }
+  }, {
+    key: "clear_placeholder",
+    value: function clear_placeholder() {
+      this.input.placeholder = '';
     }
   }, {
     key: "init",
     value: function init() {
       var self = this;
-      self.input.addEventListener('focus', function (evt) {
-        evt.preventDefault();
-        self.render();
+      /*для тестирование позиции каретки и др*/
+
+      self.input.addEventListener('click', function (evt) {//console.log( self.find_position_in_step() );
       });
-      self.input.addEventListener('mouseup', function (evt) {
+      /*отменяю ввод любых символов*/
+
+      self.input.addEventListener('input', function (evt) {
         evt.preventDefault();
-
-        if (self.mask_length_only_value() <= 0) {
-          self.render_placeholer();
-        }
-
-        self.render();
+        return false;
       });
       self.input.addEventListener('mouseover', function (evt) {
         evt.preventDefault();
-
-        if (self.mask_length_only_value() <= 0) {
-          self.render_placeholer();
-        }
+        self.print_placeholder();
       });
       self.input.addEventListener('mouseout', function (evt) {
         evt.preventDefault();
-
-        if (self.mask_length_only_value() <= 0) {
-          self.clear_placeholer();
-        }
-      });
-      self.input.addEventListener('paste', function (evt) {
-        evt.preventDefault();
-        var cd = evt.clipboardData || window.clipboardData;
-        var paste_data = cd.getData('text');
-        paste_data.replace(/\s+/g, ' ').trim();
-
-        if (paste_data.search(/@/) !== -1) {
-          var split_stroke = paste_data.split('@');
-          self.steps[0].val = split_stroke[0];
-          split_stroke = split_stroke[1].split('.');
-
-          if (paste_data.search(/\./) !== -1) {
-            self.steps[1].val = split_stroke[0];
-            self.steps[2].val = split_stroke[1];
-            self.step = 2;
-            self.render();
-          }
-        }
+        self.clear_placeholder();
       });
       self.input.addEventListener('keydown', function (evt) {
-        /*if( evt.keyCode == 39 ){
-            setTimeout(function(){
-                let current_step = self.check_step();
-                console.log( current_step );
-            },10);
-        }else if( evt.keyCode == 37 ){
-            setTimeout(function(){
-                let current_step = self.check_step();
-                console.log( current_step );
-            },10);
-        }else if( evt.keyCode == 8 ){
-            setTimeout(function(){
-                let current_step = self.check_step();
-                console.log( current_step );
-            },10);
-        }*/
+        evt.preventDefault(); //console.log( evt.key );
 
-        /*
-        если каретка не совпадает с кол-вом символов, определяю шаг, удаляю из него нужный символ
-        меняю шаг.
-        */
-        if (evt.keyCode == 8 && self.input.selectionStart !== self.mask_length_full()) {
-          evt.preventDefault();
-          var current_step = self.check_step();
-          console.log(current_step);
-          self.steps[current_step.step].val = self.steps[current_step.step].val.slice();
-          self.steps[current_step.step].val = self.steps[current_step.step].val.slice(0, current_step.cursor_pos_in_step - 1) + self.steps[current_step.step].val.slice(current_step.cursor_pos_in_step);
-          self.step = current_step.step;
-          self.render();
-        } //return false;
+        var symb = evt.key;
+        var step = self.find_step();
+        var cursor_position = self.caret.get();
+        var pos = self.find_position_in_step();
 
-      });
-      self.input.addEventListener('input', function (evt) {
-        evt.preventDefault();
-        var symb = evt.data; //проверяю если это удаление, и значение в шаге 0, то перехожу на пред шаг
+        if (cursor_position.selected) {
+          return false;
+        }
 
-        if (symb == null) {
-          //console.log(1);
-          var symbols_in_step = self.steps[self.step].delet_last();
+        switch (evt.keyCode) {
+          case 8:
+            //console.log('remove');
+            self.steps[step].remove(pos);
+            self.render();
+            self.caret.set(cursor_position.start - 1);
+            break;
 
-          if (symbols_in_step == 0 && self.step > 0) {
-            self.step--;
-          }
+          case 39:
+            self.render();
+            self.caret.set(cursor_position.start + 1);
+            break;
 
-          self.render();
-        } //проверяю если значение больше минимального и вводимый символ 
-        //это символ перехода, перехожу на след шаг
-        else if (self.steps[self.step].check_min_value() && self.steps[self.step].check_next_step_symb(symb)) {
-          //console.log(2);
-          self.step++;
-          self.render();
-        } //валидация символа, если прошел, то добавляю в значение и отрисовываю
-        //если нет то просто отрисовываю предыдущее значение
-        else if (self.steps[self.step].validate(symb)) {
-          //console.log(3);
-          self.steps[self.step].add(symb);
-          self.render();
-        } else {
-          //console.log(4);
-          self.render();
+          case 37:
+            self.render();
+            self.caret.set(cursor_position.start - 1);
+            break;
+
+          default:
+            //console.log( symb );
+            if (self.steps[step].check_next_lvl(symb, pos)) {
+              console.log('next lvl');
+              self.render();
+              self.caret.set(cursor_position.start + 1);
+              return false;
+            }
+
+            if (!self.steps[step].valid(symb)) {
+              return false;
+            }
+
+            var correct_caret = 1;
+            console.log(self.steps[step].length());
+            console.log(pos);
+            /* fix */
+
+            if (self.steps[step].length() == 0 && pos > 0) {
+              correct_caret = 0;
+              pos = 0;
+              console.log('fix');
+            }
+
+            self.steps[step].set(pos, symb);
+            self.render();
+            self.caret.set(cursor_position.start + correct_caret);
+            break;
         }
 
         return false;
