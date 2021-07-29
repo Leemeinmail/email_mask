@@ -341,6 +341,7 @@ var email_input = /*#__PURE__*/function () {
 
       self.input.addEventListener('input', function (evt) {
         evt.preventDefault();
+        evt.stopPropagation();
         console.log('input');
         return false;
       });

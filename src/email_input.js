@@ -145,8 +145,9 @@ export default class email_input {
 
         /*отменяю ввод любых символов*/
         self.input.addEventListener('input', function(evt) {
-            evt.preventDefault();
-            console.log('input');
+            evt.preventDefault(); 
+            evt.stopPropagation();
+            console.log('input'); 
             return false;
         });
 
@@ -165,7 +166,7 @@ export default class email_input {
             evt.preventDefault();
 
             console.log('keydown');
-            
+
             let symb = evt.key;
             let step = self.find_step();
             let cursor_position = self.caret.get();
