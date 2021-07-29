@@ -280,7 +280,7 @@ export default class email_input {
             /*
             если каретка не совпадает с кол-вом символов, определяю шаг, удаляю из него нужный символ
             меняю шаг.
-            */
+            
 
             if( evt.keyCode == 8 && self.input.selectionStart !== self.mask_length_full() ){
                 evt.preventDefault();
@@ -292,7 +292,7 @@ export default class email_input {
                     self.steps[current_step.step].val.slice(current_step.cursor_pos_in_step);
                 self.step = current_step.step;
                 self.render();
-            }
+            }*/
 
             //return false;
 
