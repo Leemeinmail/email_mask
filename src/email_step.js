@@ -2,84 +2,88 @@ export default class email_step {
 
     constructor(opt) {
         this.name = (opt['name']) ? opt['name'] : '';
-        this.val = (opt['value']) ? opt['value'] : '';
+        //this.val = (opt['value']) ? opt['value'] : '';
         this.plc = (opt['plc']) ? opt['plc'] : '_';
-        this.valid_symbols = (opt['valid_regx']) ? opt['valid_regx'] : /[0-9A-Za-z]/;
-        this.min_length = (opt['min_length']) ? opt['min_length'] : 3;
-        this.max_length = (opt['max_length']) ? opt['max_length'] : 3;
-        this.next_step_symbols = (opt['next_step_symbols']) ? opt['next_step_symbols'] : [' '];
+        this.valid_symbols = (opt['valid_regx']) ? opt['valid_regx'] : /[0-9A-Za-z@]/;
+        this.min_length = 1;
+        this.max_length = 99;
+        this.next_step_symbols = (opt['next_step_symbols']) ? opt['next_step_symbols'] : [];
         this.separator = (opt['separator']) ? opt['separator'] : '';
+        
+        this.val = [];
+
+        for( let i = 0; i < this.max_length; i++ ){
+            this.val[i] = ' ';
+        }
+
     }
 
-    add(val) {
-        this.val += val;
+    set( pos, val ){
+        this.val.splice( pos, 0, val );
+    };
+
+    get_symbol(){}
+
+    remove( pos ){
+        this.val.splice(pos-1, 1);
     }
 
-    set(val) {
-        this.val = val;
+    valid( val ){
+        if ( val.length > 1 || val.search(this.valid_symbols) == -1) {
+            return false;
+        }
+        return true;
     }
 
-    get_full_val() {
+    print_value(){
 
         let value = '';
 
-        let diff = this.min_length - this.length();
-
-        if (diff > 0) {
-            value += this.separator + this.val + this.plc.repeat(diff);
-        } else {
-            value += this.separator + this.val;
+        for( let i = 0; i < this.val.length; i++ ){
+            if( this.val[i] !== ' ' ){
+                value += this.val[i];
+            }
         }
 
+        let diff = this.min_length - value.length;
+
+        if( diff > 0 ){
+            value += this.plc.repeat(diff);
+        }
+
+        return value + this.separator;
+
+    };
+
+    clear_value(){
+        let value = '';
+        for( let i = 0; i < this.val.length; i++ ){
+            if( this.val[i] !== ' ' ){
+                value += this.val[i];
+            }
+        }
         return value;
-
     }
 
-    get_only_val() {
-        return this.val;
-    }
-
-    delet_last() {
-        if (this.length() > 0) {
-            this.val = this.val.substring(0, this.length() - 1);
+    length( full = false ){
+        if( !full ){
+            return this.clear_value().length;
+        }else{
+            return this.print_value().length;
         }
-        return this.length();
+        
     }
 
-    clear() {
-        this.val = '';
-    }
-
-    check_min_value() {
-        if (this.length() >= this.min_length) {
+    check_next_lvl( symb, pos ){
+        if(
+            this.next_step_symbols.indexOf(symb) !== -1 && 
+            this.length() == pos &&
+            this.length() >= this.min_length
+        ){
             return true;
         }
+
         return false;
-    }
-
-    check_next_step_symb(symb) {
-        if (this.next_step_symbols.indexOf(symb) == -1) {
-            return false;
-        }
-        return true;
-    }
-
-    validate(symb) {
-
-        if (symb.search(this.valid_symbols) == -1) {
-            return false;
-        }
-
-        return true;
-
-    }
-
-    length() {
-        return this.val.length;
-    }
-
-    full_length() {
-        return this.val.length + this.separator.length;
     }
 
 }
