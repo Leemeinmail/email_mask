@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src='dist/email_mask.js' ></script>
+</head>
+	<body>
+		<input type='' class='js-mask' > 
+	</body>
+
+	
+	<script>
+		document.addEventListener('DOMContentLoaded', function(){
+			
+			let els = document.querySelectorAll('.js-mask');
+
+			els.forEach(function(item){
+				new email_mask.init({
+		            input: item
+		        });
+			});
+
+		});
+	</script>
+	
+</html>
