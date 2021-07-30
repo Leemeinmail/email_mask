@@ -217,6 +217,8 @@ var email_input = /*#__PURE__*/function () {
     email_input_classCallCheck(this, email_input);
 
     this.input = opt['input'];
+    this.set_coords = 0;
+    this.device = '';
     this.caret = new email_caret({
       el: opt['input']
     });
@@ -337,13 +339,33 @@ var email_input = /*#__PURE__*/function () {
 
       self.input.addEventListener('click', function (evt) {//console.log( self.find_position_in_step() );
       });
-      /*отменяю ввод любых символов*/
-
       self.input.addEventListener('input', function (evt) {
         evt.preventDefault();
         evt.stopPropagation();
         console.log('input');
+        self.input.style.caretColor = 'transparent';
+        setTimeout(function () {
+          self.render();
+        }, 0);
+        setTimeout(function () {
+          self.caret.set(self.set_coords);
+          self.input.style.caretColor = self.input.style.color;
+        }, 0);
         return false;
+      });
+      self.input.addEventListener('textInput', function (evt) {
+        /*evt.preventDefault(); 
+        evt.stopPropagation();
+        self.input.style.caretColor = 'transparent';
+        console.log('textInput');
+        setTimeout(function(){
+            self.render();
+        },10);
+        setTimeout(function(){
+            self.caret.set(self.set_coords);
+            self.input.style.caretColor = self.input.style.color;
+        },20);
+        return false;*/
       });
       self.input.addEventListener('mouseover', function (evt) {
         evt.preventDefault();
@@ -354,8 +376,8 @@ var email_input = /*#__PURE__*/function () {
         self.clear_placeholder();
       });
       self.input.addEventListener('keydown', function (evt) {
-        evt.preventDefault();
-        console.log('keydown');
+        //evt.preventDefault();
+        //console.log('keydown');
         var symb = evt.key;
         var step = self.find_step();
         var cursor_position = self.caret.get();
@@ -368,27 +390,31 @@ var email_input = /*#__PURE__*/function () {
         switch (evt.keyCode) {
           case 8:
             //console.log('remove');
-            self.steps[step].remove(pos);
-            self.render();
-            self.caret.set(cursor_position.start - 1);
+            self.steps[step].remove(pos); //self.render();
+
+            self.set_coords = cursor_position.start - 1; //self.caret.set(self.set_coords);
+
             break;
 
           case 39:
-            self.render();
-            self.caret.set(cursor_position.start + 1);
+            //self.render();
+            self.set_coords = cursor_position.start; //self.caret.set(self.set_coords);
+
             break;
 
           case 37:
-            self.render();
-            self.caret.set(cursor_position.start - 1);
+            //self.render();
+            self.set_coords = cursor_position.start; //self.caret.set(self.set_coords);
+
             break;
 
           default:
             //console.log( symb );
             if (self.steps[step].check_next_lvl(symb, pos)) {
-              console.log('next lvl');
-              self.render();
-              self.caret.set(cursor_position.start + 1);
+              console.log('next lvl'); //self.render();
+
+              self.set_coords = cursor_position.start + 1; //self.caret.set(self.set_coords);
+
               return false;
             }
 
@@ -397,23 +423,20 @@ var email_input = /*#__PURE__*/function () {
             }
 
             var correct_caret = 1;
-            console.log(self.steps[step].length());
-            console.log(pos);
             /* fix */
 
             if (self.steps[step].length() == 0 && pos > 0) {
               correct_caret = 0;
               pos = 0;
-              console.log('fix');
             }
 
-            self.steps[step].set(pos, symb);
-            self.render();
-            self.caret.set(cursor_position.start + correct_caret);
-            break;
-        }
+            self.steps[step].set(pos, symb); //self.render();
 
-        return false;
+            self.set_coords = cursor_position.start + correct_caret; //self.caret.set(self.set_coords);
+
+            break;
+        } //return false;
+
       });
     }
   }]);

@@ -6,6 +6,8 @@ export default class email_input {
     constructor(opt) {
 
         this.input = opt['input'];
+        this.set_coords = 0;
+        this.device = '';
         this.caret = new email_caret({
             el: opt['input']
         });
@@ -143,12 +145,34 @@ export default class email_input {
             //console.log( self.find_position_in_step() );
         });
 
-        /*отменяю ввод любых символов*/
         self.input.addEventListener('input', function(evt) {
             evt.preventDefault(); 
             evt.stopPropagation();
-            console.log('input'); 
+            console.log('input');
+            self.input.style.caretColor = 'transparent';
+            setTimeout(function(){
+                self.render();
+            },0);
+            setTimeout(function(){
+                self.caret.set(self.set_coords);
+                self.input.style.caretColor = self.input.style.color;
+            },0);
             return false;
+        });
+
+        self.input.addEventListener('textInput', function(evt) {
+            /*evt.preventDefault(); 
+            evt.stopPropagation();
+            self.input.style.caretColor = 'transparent';
+            console.log('textInput');
+            setTimeout(function(){
+                self.render();
+            },10);
+            setTimeout(function(){
+                self.caret.set(self.set_coords);
+                self.input.style.caretColor = self.input.style.color;
+            },20);
+            return false;*/
         });
 
         self.input.addEventListener('mouseover', function(evt) {
@@ -163,9 +187,8 @@ export default class email_input {
 
         self.input.addEventListener('keydown', function(evt) {
 
-            evt.preventDefault();
-
-            console.log('keydown');
+            //evt.preventDefault();
+            //console.log('keydown');
 
             let symb = evt.key;
             let step = self.find_step();
@@ -179,18 +202,21 @@ export default class email_input {
                 case 8:
                     //console.log('remove');
                     self.steps[step].remove(pos);
-                    self.render();
-                    self.caret.set(cursor_position.start - 1);
+                    //self.render();
+                    self.set_coords = cursor_position.start - 1;
+                    //self.caret.set(self.set_coords);
                     break;
 
                 case 39:
-                    self.render();
-                    self.caret.set(cursor_position.start + 1);
+                    //self.render();
+                    self.set_coords = cursor_position.start;
+                    //self.caret.set(self.set_coords);
                     break;
 
                 case 37:
-                    self.render();
-                    self.caret.set(cursor_position.start - 1);
+                    //self.render();
+                    self.set_coords = cursor_position.start;
+                    //self.caret.set(self.set_coords);
                     break;
 
                 default:
@@ -199,8 +225,9 @@ export default class email_input {
 
                     if (self.steps[step].check_next_lvl(symb, pos)) {
                         console.log('next lvl');
-                        self.render();
-                        self.caret.set(cursor_position.start + 1);
+                        //self.render();
+                        self.set_coords = cursor_position.start + 1;
+                        //self.caret.set(self.set_coords);
                         return false;
                     }
                     if (!self.steps[step].valid(symb)) {
@@ -209,9 +236,6 @@ export default class email_input {
 
                     let correct_caret = 1;
 
-                    console.log(self.steps[step].length());
-                    console.log(pos);
-
                     /* fix */
                     if (
                         self.steps[step].length() == 0 &&
@@ -219,19 +243,17 @@ export default class email_input {
                     ) {
                         correct_caret = 0;
                         pos = 0;
-                        console.log('fix');
                     }
 
                     self.steps[step].set(pos, symb);
-                    self.render();
-
-                    self.caret.set(cursor_position.start + correct_caret);
-
+                    //self.render();
+                    self.set_coords = cursor_position.start + correct_caret;
+                    //self.caret.set(self.set_coords);
 
                     break;
             }
 
-            return false;
+            //return false;
 
         });
 
