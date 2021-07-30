@@ -146,8 +146,8 @@ export default class email_input {
         });
 
         self.input.addEventListener('input', function(evt) {
-            evt.preventDefault(); 
-            evt.stopPropagation();
+            //evt.preventDefault(); 
+            //evt.stopPropagation();
             console.log('input');
             self.input.style.caretColor = 'transparent';
             setTimeout(function(){
@@ -157,7 +157,7 @@ export default class email_input {
                 self.caret.set(self.set_coords);
                 self.input.style.caretColor = self.input.style.color;
             },0);
-            return false;
+            //return false;
         });
 
         self.input.addEventListener('textInput', function(evt) {
@@ -186,10 +186,8 @@ export default class email_input {
         });
 
         self.input.addEventListener('keydown', function(evt) {
-
             //evt.preventDefault();
             //console.log('keydown');
-
             let symb = evt.key;
             let step = self.find_step();
             let cursor_position = self.caret.get();

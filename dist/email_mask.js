@@ -340,8 +340,8 @@ var email_input = /*#__PURE__*/function () {
       self.input.addEventListener('click', function (evt) {//console.log( self.find_position_in_step() );
       });
       self.input.addEventListener('input', function (evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
+        //evt.preventDefault(); 
+        //evt.stopPropagation();
         console.log('input');
         self.input.style.caretColor = 'transparent';
         setTimeout(function () {
@@ -350,8 +350,7 @@ var email_input = /*#__PURE__*/function () {
         setTimeout(function () {
           self.caret.set(self.set_coords);
           self.input.style.caretColor = self.input.style.color;
-        }, 0);
-        return false;
+        }, 0); //return false;
       });
       self.input.addEventListener('textInput', function (evt) {
         /*evt.preventDefault(); 
