@@ -163,6 +163,8 @@ export default class email_input {
             let step = 0;
             let pos = 0;
 
+            console.log( symb );
+
             switch(symb){
                 
                 case null:
@@ -177,6 +179,7 @@ export default class email_input {
                     step = self.find_step( cursor_position - 1 );
                     pos = self.find_position_in_step( cursor_position - 1, step );
 
+                    console.log('def');
                     //console.log( "step in def:" + step );
                     //console.log( "pos in def:" + pos );
 
@@ -193,7 +196,9 @@ export default class email_input {
                     }
 
                     if (!self.steps[step].valid(symb)) {
-                        //console.log('not_valid');
+                        console.log('not_valid');
+                        self.render();
+                        self.set_caret(cursor_position - 1);
                         return false;
                     }
 
