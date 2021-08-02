@@ -249,14 +249,14 @@ export default class email_input {
                         return false;
                     }
 
-                    /*if (
+                    if (
                         self.steps[step].length() == 0 &&
                         pos > 0
                     ) {
                         pos = 0;
                         self.caret.start -= 1;
                         console.log('fix');
-                    }*/
+                    }
 
                     self.steps[step].set(pos, symb);
                     self.render();

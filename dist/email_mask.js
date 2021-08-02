@@ -476,15 +476,12 @@ var email_input = /*#__PURE__*/function () {
               self.caret.set(self.caret.start, self.caret.start);
               return false;
             }
-            /*if (
-                self.steps[step].length() == 0 &&
-                pos > 0
-            ) {
-                pos = 0;
-                self.caret.start -= 1;
-                console.log('fix');
-            }*/
 
+            if (self.steps[step].length() == 0 && pos > 0) {
+              pos = 0;
+              self.caret.start -= 1;
+              console.log('fix');
+            }
 
             self.steps[step].set(pos, symb);
             self.render();
