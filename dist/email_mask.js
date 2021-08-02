@@ -217,7 +217,7 @@ var email_caret = /*#__PURE__*/function () {
       setTimeout(function () {
         self.el.setSelectionRange(p1, p2);
         self.el.style.caretColor = self.el.style.color;
-      }, 10);
+      }, 100);
     }
   }, {
     key: "init",
