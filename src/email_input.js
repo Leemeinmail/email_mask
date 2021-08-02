@@ -135,17 +135,14 @@ export default class email_input {
         this.input.placeholder = '';
     }
 
-    /*set_caret(p1,p2) {
+    set_caret(p1,p2) {
         let self = this;
-        self.input.style.caretColor = 'transparent';
-        self.status = false;
         setTimeout(function() {
             //console.log('set caret');
             self.caret.set(p1,p2);
             self.input.style.caretColor = self.input.style.color;
-            self.status = true;
         }, 0);
-    }*/
+    }
 
     split_paste_string(string) {
 
@@ -208,6 +205,10 @@ export default class email_input {
             evt.preventDefault();
             //console.log('input'); 
 
+            self.input.style.caretColor = 'transparent';
+            self.input.setAttribute('autocorrect', 'off');
+            self.input.setAttribute('autocapitalize', 'off');
+
             if (!self.status) { self.render(); return false; }
 
             let symb = evt.data;
@@ -227,7 +228,7 @@ export default class email_input {
 
                     self.steps[step].remove(pos - 1);
                     self.render();
-                    self.caret.set(self.caret.start, self.caret.start);
+                    self.set_caret(self.caret.start, self.caret.start);
                     break;
 
                 default:
@@ -241,20 +242,19 @@ export default class email_input {
                     if (self.steps[step].check_next_lvl(symb, pos)) {
                         //console.log('next lvl');
                         self.render();
-                        self.caret.set(self.caret.start, self.caret.start);
+                        self.set_caret(self.caret.start, self.caret.start);
                         return false;
                     }
 
                     if (symb == ' ') {
                         self.render();
-                        self.caret.set(self.caret.start + 1, self.caret.start + 1);
-                        return false;
+                        self.set_caret(self.caret.start + 1, self.caret.start + 1);
                     }
 
                     if (!self.steps[step].valid(symb)) {
                         console.log('not_valid');
                         self.render();
-                        self.caret.set(self.caret.start - 1, self.caret.start - 1);
+                        self.set_caret(self.caret.start - 1, self.caret.start - 1);
                         return false;
                     }
 
@@ -269,7 +269,7 @@ export default class email_input {
 
                     self.steps[step].set(pos, symb);
                     self.render();
-                    self.caret.set(self.caret.start, self.caret.start);
+                    self.set_caret(self.caret.start, self.caret.start);
 
                     //console.log('valid');
                     console.log(self.steps);
