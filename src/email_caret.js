@@ -30,13 +30,10 @@ export default class email_caret {
     }
 
     set(p1,p2){
-
         let self = this;
-
         setTimeout(function() {
             self.el.setSelectionRange( p1, p2 );
         },0);
-
     }
 
     init(){
