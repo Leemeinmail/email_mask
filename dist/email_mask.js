@@ -66,7 +66,7 @@ var email_step = /*#__PURE__*/function () {
     this.name = opt['name'] ? opt['name'] : ''; //this.val = (opt['value']) ? opt['value'] : '';
 
     this.plc = opt['plc'] ? opt['plc'] : '_';
-    this.valid_symbols = opt['valid_regx'] ? opt['valid_regx'] : /[0-9A-Za-z@]/;
+    this.valid_regx = opt['valid_regx'] ? opt['valid_regx'] : /[0-9A-Za-z@]/;
     this.min_length = 1;
     this.max_length = 99;
     this.next_step_symbols = opt['next_step_symbols'] ? opt['next_step_symbols'] : [];
@@ -84,17 +84,32 @@ var email_step = /*#__PURE__*/function () {
       this.val.splice(pos, 0, val);
     }
   }, {
+    key: "set_string",
+    value: function set_string(str) {
+      var symbs_args = str.split('');
+
+      for (var i = 0; i < symbs_args.length; i++) {
+        if (this.valid(symbs_args[i])) {
+          this.val[i] = symbs_args[i];
+        } else {
+          return false;
+        }
+      }
+
+      return true;
+    }
+  }, {
     key: "get_symbol",
     value: function get_symbol() {}
   }, {
     key: "remove",
     value: function remove(pos) {
-      this.val.splice(pos - 1, 1);
+      this.val.splice(pos, 1);
     }
   }, {
     key: "valid",
     value: function valid(val) {
-      if (val.length > 1 || val.search(this.valid_symbols) == -1) {
+      if (val.length > 1 || val.search(this.valid_regx) == -1) {
         return false;
       }
 
@@ -170,31 +185,54 @@ var email_caret = /*#__PURE__*/function () {
     email_caret_classCallCheck(this, email_caret);
 
     this.el = opt['el'];
+    this.start = 0;
+    this.end = 0;
+    this.select = false;
+    this.init();
   }
 
   email_caret_createClass(email_caret, [{
-    key: "get",
-    value: function get() {
-      var coords = {
-        start: this.el.selectionStart,
-        end: this.el.selectionEnd,
-        selected: false
-      };
+    key: "up",
+    value: function up() {
+      this.start = this.el.selectionStart;
+      this.end = this.el.selectionEnd;
 
-      if (this.el.selectionStart !== 0 && this.el.selectionEnd !== 0) {
-        var koef = this.el.selectionStart / this.el.selectionEnd;
+      if (this.start !== 0 || this.end !== 0) {
+        var koef = this.start / this.end;
 
         if (koef !== 1) {
-          coords.selected = true;
+          this.select = true;
+          return false;
         }
       }
 
-      return coords;
+      this.select = false;
+      return false;
     }
   }, {
     key: "set",
-    value: function set(p) {
-      this.el.setSelectionRange(p, p);
+    value: function set(p1, p2) {
+      this.start = p1;
+      this.end = p2;
+      this.el.setSelectionRange(p1, p2);
+    }
+  }, {
+    key: "init",
+    value: function init() {
+      var self = this; //обновлять вручную если было выделено
+
+      self.el.addEventListener('input', function (evt) {
+        if (self.select) {
+          return false;
+        }
+
+        self.up();
+      });
+      self.el.addEventListener('select', function (evt) {
+        evt.preventDefault();
+        self.up();
+        console.log(self);
+      });
     }
   }]);
 
@@ -221,9 +259,11 @@ var email_input = /*#__PURE__*/function () {
       el: opt['input']
     });
     this.steps = [];
+    this.status = true;
     this.steps[0] = new email_step({
       separator: '@',
-      next_step_symbols: ['@', ' ']
+      next_step_symbols: ['@', ' '],
+      valid_regx: /[0-9A-Za-z!#$%&'*+/./=?^_`{|}~\-]/
     });
     this.steps[1] = new email_step({
       separator: '.',
@@ -331,74 +371,129 @@ var email_input = /*#__PURE__*/function () {
     }
   }, {
     key: "set_caret",
-    value: function set_caret(p) {
+    value: function set_caret(p1, p2) {
       var self = this;
       self.input.style.caretColor = 'transparent';
+      self.status = false;
       setTimeout(function () {
         //console.log('set caret');
-        self.caret.set(p);
+        self.caret.set(p1, p2);
         self.input.style.caretColor = self.input.style.color;
+        self.status = true;
       }, 0);
+    }
+  }, {
+    key: "split_paste_string",
+    value: function split_paste_string(string) {
+      var split_email = [];
+      var slice_text = '';
+
+      if (string.search(/@/) !== -1) {
+        slice_text = string.split('@');
+        split_email[0] = slice_text[0];
+
+        if (slice_text[1].search(/\./) !== -1) {
+          slice_text = slice_text[1].split('.');
+          split_email[1] = slice_text[0];
+          split_email[2] = slice_text[1];
+          return split_email;
+        }
+      }
+
+      return false;
     }
   }, {
     key: "init",
     value: function init() {
       var self = this;
       /*для тестирование позиции каретки и др*/
+      //self.input.addEventListener('click', function(evt) {
+      //});
 
-      self.input.addEventListener('click', function (evt) {
-        var cursor_position = self.caret.get().start;
-        var step = self.find_step(cursor_position + 1); //console.log("click:" + self.find_step( cursor_position ) );
-        //console.log("click:" + self.find_position_in_step( cursor_position, step ) );
+      self.input.addEventListener('paste', function (evt) {
+        evt.preventDefault();
+        var paste_data = evt.clipboardData || window.clipboardData;
+        var paste_text = paste_data.getData('text');
+        paste_text.replace(/\s+/g, ' ').trim();
+        var paste_email = self.split_paste_string(paste_text);
+
+        if (paste_email) {
+          for (var i = 0; i < paste_email.length; i++) {
+            var res = self.steps[i].set_string(paste_email[i]);
+
+            if (!res) {
+              return false;
+            }
+          }
+        }
+
+        self.render();
       });
       /*отменяю ввод любых символов*/
 
       self.input.addEventListener('input', function (evt) {
         evt.preventDefault(); //console.log('input'); 
 
+        if (!self.status) {
+          self.render();
+          return false;
+        }
+
         var symb = evt.data;
-        var cursor_position = self.caret.get().start;
         var step = 0;
         var pos = 0;
-        console.log(symb);
+
+        if (self.caret.select) {
+          self.caret.up();
+          self.render();
+          return false;
+        }
 
         switch (symb) {
           case null:
-            step = self.find_step(cursor_position + 1);
-            pos = self.find_position_in_step(cursor_position + 1, step);
-            self.steps[step].remove(pos);
+            step = self.find_step(self.caret.start + 1);
+            pos = self.find_position_in_step(self.caret.start + 1, step);
+            console.log("step in rem:" + step);
+            console.log("pos in rem:" + pos);
+            self.steps[step].remove(pos - 1);
             self.render();
-            self.set_caret(cursor_position);
+            self.set_caret(self.caret.start, self.caret.start);
             break;
 
           default:
-            step = self.find_step(cursor_position - 1);
-            pos = self.find_position_in_step(cursor_position - 1, step);
-            console.log('def'); //console.log( "step in def:" + step );
+            step = self.find_step(self.caret.start - 1);
+            pos = self.find_position_in_step(self.caret.start - 1, step); //console.log('def');
+            //console.log( "step in def:" + step );
             //console.log( "pos in def:" + pos );
 
             if (self.steps[step].check_next_lvl(symb, pos)) {
               //console.log('next lvl');
               self.render();
-              self.set_caret(cursor_position);
+              self.set_caret(self.caret.start, self.caret.start);
               return false;
             }
 
             if (symb == ' ') {
               self.render();
-              self.set_caret(cursor_position + 1);
+              self.set_caret(self.caret.start + 1, self.caret.start + 1);
             }
 
             if (!self.steps[step].valid(symb)) {
               console.log('not_valid');
               self.render();
-              self.set_caret(cursor_position - 1);
+              self.set_caret(self.caret.start - 1, self.caret.start - 1);
               return false;
+            }
+
+            if (self.steps[step].length() == 0 && pos > 0) {
+              pos = 0;
+              self.caret.start -= 1;
+              console.log('fix');
             }
 
             self.steps[step].set(pos, symb);
             self.render();
-            self.set_caret(cursor_position); //console.log('valid');
+            self.set_caret(self.caret.start, self.caret.start); //console.log('valid');
 
             console.log(self.steps);
             break;

@@ -4,7 +4,7 @@ export default class email_step {
         this.name = (opt['name']) ? opt['name'] : '';
         //this.val = (opt['value']) ? opt['value'] : '';
         this.plc = (opt['plc']) ? opt['plc'] : '_';
-        this.valid_symbols = (opt['valid_regx']) ? opt['valid_regx'] : /[0-9A-Za-z@]/;
+        this.valid_regx = (opt['valid_regx']) ? opt['valid_regx'] : /[0-9A-Za-z@]/;
         this.min_length = 1;
         this.max_length = 99;
         this.next_step_symbols = (opt['next_step_symbols']) ? opt['next_step_symbols'] : [];
@@ -22,14 +22,29 @@ export default class email_step {
         this.val.splice( pos, 0, val );
     };
 
+    set_string( str ){
+        let symbs_args = str.split('');
+
+        for( let i = 0; i < symbs_args.length; i++ ){
+            if( this.valid(symbs_args[i]) ){
+                this.val[i] = symbs_args[i];
+            }else{
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
     get_symbol(){}
 
     remove( pos ){
-        this.val.splice(pos-1, 1);
+        this.val.splice(pos, 1);
     }
 
     valid( val ){
-        if ( val.length > 1 || val.search(this.valid_symbols) == -1) {
+        if ( val.length > 1 || val.search(this.valid_regx) == -1) {
             return false;
         }
         return true;
@@ -75,6 +90,7 @@ export default class email_step {
     }
 
     check_next_lvl( symb, pos ){
+
         if(
             this.next_step_symbols.indexOf(symb) !== -1 && 
             this.length() == pos &&
