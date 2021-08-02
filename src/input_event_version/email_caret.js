@@ -31,11 +31,10 @@ export default class email_caret {
 
     set(p1,p2){
         let self = this;
-        let color = self.el.style.color;
         self.el.style.caretColor = 'transparent';
         setTimeout(function() {
             self.el.setSelectionRange( p1, p2 );
-            self.el.style.caretColor = color;
+            self.el.style.caretColor = self.el.style.color;
         }, 0);
     }
 
@@ -44,10 +43,10 @@ export default class email_caret {
         let self = this;
 
         //обновлять вручную если было выделено
-        /*self.el.addEventListener('input', function(evt) {
+        self.el.addEventListener('input', function(evt) {
             if( self.select ){ return false; }
             self.up();
-        });*/
+        });
 
         self.el.addEventListener('select', function(evt) {
             evt.preventDefault();
