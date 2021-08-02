@@ -38,7 +38,7 @@ export default class email_caret {
         setTimeout(function() {
             self.el.setSelectionRange( p1, p2 );
             self.el.style.caretColor = self.el.style.color;
-        },100);
+        },0);
 
     }
 
