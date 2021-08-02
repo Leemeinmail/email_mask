@@ -3,11 +3,11 @@ import email_caret from './email_caret.js';
 
 export default class email_input {
 
-    constructor(opt) {
+    constructor(input) {
 
-        this.input = opt['input'];
+        this.input = input;
         this.caret = new email_caret({
-            el: opt['input']
+            el: input
         });
 
         this.steps = [];
@@ -39,7 +39,7 @@ export default class email_input {
     find_step(cursor_position) {
 
         let step_lengths = [];
-        let step = NaN;
+        let step_num = 0;
 
         this.foreach_steps(function(step, index) {
 
@@ -56,93 +56,62 @@ export default class email_input {
         });
 
         if (cursor_position >= 0 && cursor_position < step_lengths[0]) {
-            //console.log('step 1');
-            step = 0;
+            step_num = 0;
         } else if (cursor_position >= step_lengths[0] && cursor_position < step_lengths[1]) {
-            //console.log('step 2');
-            step = 1;
+            step_num = 1;
         } else if (cursor_position >= step_lengths[1]) {
-            //console.log('step 3');
-            step = 2;
+            step_num = 2;
         }
 
-        //console.log( step_lengths );
-        //console.log( cursor_position );
-        //console.log( "step in func: " + step );
-        //console.log( (cursor_position >= 0 && cursor_position <= step_lengths[0]) );
-        //console.log( (cursor_position > step_lengths[0] && cursor_position <= step_lengths[1]) );
-
-        return step;
+        return step_num;
 
     }
 
     find_position_in_step(caret_position, step_num) {
 
-        let position = 0;
-
         if (step_num == 0) {
-            position = caret_position;
-        } else {
-            let before_steps_length = 0;
-
-            this.foreach_steps(function(step, index) {
-
-                if (index < step_num) {
-                    before_steps_length += step.length(true);
-                }
-
-            });
-
-            //console.log("find pos caret:" + caret_position);
-            //console.log("find pos before:" + before_steps_length);
-
-            position = caret_position - before_steps_length;
+            return caret_position;
         }
 
-        return position;
-    }
+        let before_steps_length = 0;
 
-    get_print_value() {
-        let value = '';
-
-        this.foreach_steps(function(step) {
-            value += step.print_value();
-            //console.log( step );
+        this.foreach_steps(function(step, index) {
+            if (index < step_num) {
+                before_steps_length += step.length(true);
+            }
         });
 
-        return value;
+        return caret_position - before_steps_length;
+
     }
 
-    render() {
-        this.input.value = this.get_print_value();
-    }
-
-    print_placeholder() {
+    value_length(full = false) {
 
         let length = 0;
 
         this.foreach_steps(function(step) {
-            length += step.length();
+            length += step.length(full);
         });
 
-        if (length == 0) {
-            this.input.placeholder = this.get_print_value();
-        }
+        return length;
+    }
+
+    get_print_value() {
+
+        let value = '';
+
+        this.foreach_steps(function(step) {
+            value += step.print_value();
+        });
+
+        return value;
 
     }
 
-    clear_placeholder() {
-        this.input.placeholder = '';
-    }
+    render() {
 
-    set_caret(p1,p2) {
-        let self = this;
-        self.input.style.color = 'transparent';
-        setTimeout(function() {
-            //console.log('set caret');
-            self.caret.set(p1,p2);
-            self.input.style.color = self.input.style.color;
-        }, 0);
+        this.input.value = this.get_print_value();
+
     }
 
     split_paste_string(string) {
@@ -172,13 +141,23 @@ export default class email_input {
 
     }
 
+    print_placeholder() {
+
+        if (this.value_length() == 0) {
+            this.input.placeholder = this.get_print_value();
+        }
+
+    }
+
+    clear_placeholder() {
+        if (this.value_length() == 0) {
+            this.input.placeholder = '';
+        }
+    }
+
     init() {
 
         let self = this;
-
-        /*для тестирование позиции каретки и др*/
-        //self.input.addEventListener('click', function(evt) {
-        //});
 
         self.input.addEventListener('paste', function(evt) {
             evt.preventDefault();
@@ -201,46 +180,44 @@ export default class email_input {
 
         });
 
-        /*отменяю ввод любых символов*/
         self.input.addEventListener('input', function(evt) {
             evt.preventDefault();
-            //console.log('input'); 
 
             self.input.setAttribute('autocorrect', 'off');
             self.input.setAttribute('autocapitalize', 'off');
 
-            if (!self.status) { self.render(); return false; }
+            if (!self.status) {
+                self.render();
+                return false;
+            }
 
-            let symb = evt.data;
-            let step = 0;
-            let pos = 0;
+            if (self.caret.select) {
+                self.render();
+                self.caret.set(self.caret.start, self.caret.start);
+                self.caret.up(); //обновляю вручную тк было выделение
+                return false;
+            }
 
-            if( self.caret.select ){ self.caret.up(); self.render(); return false; }
+            let symb = evt.data,
+                position_in_step,
+                current_step;
 
             switch (symb) {
 
                 case null:
-                    step = self.find_step(self.caret.start + 1);
-                    pos = self.find_position_in_step(self.caret.start + 1, step);
+                    current_step = self.find_step(self.caret.start + 1);
+                    position_in_step = self.find_position_in_step(self.caret.start + 1, current_step);
 
-                    //console.log("step in rem:" + step);
-                    //console.log("pos in rem:" + pos);
-
-                    self.steps[step].remove(pos - 1);
+                    self.steps[current_step].remove(position_in_step - 1);
                     self.render();
                     self.caret.set(self.caret.start, self.caret.start);
                     break;
 
                 default:
-                    step = self.find_step(self.caret.start - 1);
-                    pos = self.find_position_in_step(self.caret.start - 1, step);
+                    current_step = self.find_step(self.caret.start - 1);
+                    position_in_step = self.find_position_in_step(self.caret.start - 1, current_step);
 
-                    //console.log('def');
-                    //console.log( "step in def:" + step );
-                    //console.log( "pos in def:" + pos );
-
-                    if (self.steps[step].check_next_lvl(symb, pos)) {
-                        //console.log('next lvl');
+                    if (self.steps[current_step].check_next_lvl(symb, position_in_step)) {
                         self.render();
                         self.caret.set(self.caret.start, self.caret.start);
                         return false;
@@ -251,28 +228,23 @@ export default class email_input {
                         self.caret.set(self.caret.start + 1, self.caret.start + 1);
                     }
 
-                    if (!self.steps[step].valid(symb)) {
-                        console.log('not_valid');
+                    if (!self.steps[current_step].valid(symb)) {
                         self.render();
                         self.caret.set(self.caret.start - 1, self.caret.start - 1);
                         return false;
                     }
 
                     if (
-                        self.steps[step].length() == 0 &&
-                        pos > 0
+                        self.steps[current_step].length() == 0 &&
+                        position_in_step > 0
                     ) {
-                        pos = 0;
+                        position_in_step = 0;
                         self.caret.start -= 1;
-                        console.log('fix');
                     }
 
-                    self.steps[step].set(pos, symb);
+                    self.steps[current_step].set(position_in_step, symb);
                     self.render();
                     self.caret.set(self.caret.start, self.caret.start);
-
-                    //console.log('valid');
-                    console.log(self.steps);
 
                     break;
 
@@ -289,6 +261,16 @@ export default class email_input {
         self.input.addEventListener('mouseout', function(evt) {
             evt.preventDefault();
             self.clear_placeholder();
+        });
+
+        self.input.addEventListener('click', function(evt) {
+
+            if (self.value_length() == 0) {
+                self.render();
+                self.caret.set(self.caret.start, self.caret.start);
+                return false;
+            }
+
         });
 
     }

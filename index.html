@@ -6,15 +6,54 @@
 	<title>Document</title>
 	<script src='dist/email_mask.js' ></script>
 	<style>
-		.mask{
-			padding: 6px;
-			outline: none;
+		*{font-family: "Microsoft Sans Serif";margin: 0; padding: 0; box-sizing: border-box;}
+		.container{
+			width: 100%;
+			max-width: 1170px;
+			padding: 60px 20px;
+			margin: 0 auto;
 		}
+		.title{
+			margin-bottom: 60px;
+			text-align: center;
+		}
+		.mask-container{
+			max-width: 300px;
+			margin: 0 auto;
+			margin-bottom: 30px;
+		}
+		.mask{
+		    display: block;
+		    width: 100%;
+		    font-family: "Microsoft Sans Serif";
+		    font-size: 20px;
+		    font-weight: 500;
+		    padding: .5em 1em;
+		    outline: none;
+		    border: 2px solid #c5c5c5;
+		    color: #1d1b1b;
+		    border-radius: 5px;
+		}
+
+		@media( min-width:320px ) and (max-width: 767px) {
+			.mask{
+				font-size: 14px;
+			}
+		}
+
 	</style>
 </head>
+	
 	<body>
-		<input type='text' class='js-mask mask' > 
-		<input type='text' class='mask js-other'> 
+		<div class='container' >
+			<h1 class='title' >Кастомная email маска</h1>
+			<div class='mask-container' >
+				<input type='text' class='js-mask mask' > 
+			</div>
+			<div class='mask-container' >
+				<input type='text' class='js-mask mask' > 
+			</div>
+		</div>
 	</body>
 
 	
@@ -23,11 +62,9 @@
 			
 			let els = document.querySelectorAll('.js-mask');
 
-			els.forEach(function(item){
-				new email_mask.init({
-		            input: item
-		        });
-			});
+			for( let i = 0; i < els.length; i++ ){
+				new email_mask.init(els[i]);
+			}
 
 		});
 	</script>

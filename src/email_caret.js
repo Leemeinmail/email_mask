@@ -9,16 +9,16 @@ export default class email_caret {
         this.init();
     }
 
-    up(){
+    up() {
 
         this.start = this.el.selectionStart;
         this.end = this.el.selectionEnd;
 
-        if( this.start !== 0 || this.end !== 0 ){
+        if (this.start !== 0 || this.end !== 0) {
             let koef = this.start / this.end;
-            if( koef !== 1 ){
+            if (koef !== 1) {
                 this.select = true;
-                
+
                 return false;
 
             }
@@ -29,23 +29,30 @@ export default class email_caret {
 
     }
 
-    set(p1,p2){
+    set(p1, p2) {
         let self = this;
-        //self.el.style.caretColor = 'transparent';
-        self.el.style.caretColor = 'red';
-        setTimeout(function() {
-            self.el.setSelectionRange( p1, p2 );
-            self.el.style.caretColor = self.el.style.color;
-        }, 0);
+        self.el.style.caretColor = 'transparent';
+        let color = self.el.style.color || '#000';
+
+        if (/Android/i.test(navigator.userAgent)) {
+            setTimeout(function() {
+                self.el.setSelectionRange(p1, p2);
+                self.el.style.caretColor = color;
+            }, 0);
+        } else {
+            self.el.setSelectionRange(p1, p2);
+            self.el.style.caretColor = color;
+        }
+
+
     }
 
-    init(){
+    init() {
 
         let self = this;
 
-        //обновлять вручную если было выделено
         self.el.addEventListener('input', function(evt) {
-            if( self.select ){ return false; }
+            if (self.select) { return false; }
             self.up();
         });
 
