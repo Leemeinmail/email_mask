@@ -212,9 +212,12 @@ var email_caret = /*#__PURE__*/function () {
   }, {
     key: "set",
     value: function set(p1, p2) {
-      this.start = p1;
-      this.end = p2;
-      this.el.setSelectionRange(p1, p2);
+      var self = this;
+      self.el.style.caretColor = 'transparent';
+      setTimeout(function () {
+        self.el.setSelectionRange(p1, p2);
+        self.el.style.caretColor = self.el.style.color;
+      }, 0);
     }
   }, {
     key: "init",
@@ -369,19 +372,18 @@ var email_input = /*#__PURE__*/function () {
     value: function clear_placeholder() {
       this.input.placeholder = '';
     }
-  }, {
-    key: "set_caret",
-    value: function set_caret(p1, p2) {
-      var self = this;
-      self.input.style.caretColor = 'transparent';
-      self.status = false;
-      setTimeout(function () {
-        //console.log('set caret');
-        self.caret.set(p1, p2);
-        self.input.style.caretColor = self.input.style.color;
-        self.status = true;
-      }, 0);
-    }
+    /*set_caret(p1,p2) {
+        let self = this;
+        self.input.style.caretColor = 'transparent';
+        self.status = false;
+        setTimeout(function() {
+            //console.log('set caret');
+            self.caret.set(p1,p2);
+            self.input.style.caretColor = self.input.style.color;
+            self.status = true;
+        }, 0);
+    }*/
+
   }, {
     key: "split_paste_string",
     value: function split_paste_string(string) {
@@ -457,7 +459,7 @@ var email_input = /*#__PURE__*/function () {
             console.log("pos in rem:" + pos);
             self.steps[step].remove(pos - 1);
             self.render();
-            self.set_caret(self.caret.start, self.caret.start);
+            self.caret.set(self.caret.start, self.caret.start);
             break;
 
           default:
@@ -469,19 +471,20 @@ var email_input = /*#__PURE__*/function () {
             if (self.steps[step].check_next_lvl(symb, pos)) {
               //console.log('next lvl');
               self.render();
-              self.set_caret(self.caret.start, self.caret.start);
+              self.caret.set(self.caret.start, self.caret.start);
               return false;
             }
 
             if (symb == ' ') {
               self.render();
-              self.set_caret(self.caret.start + 1, self.caret.start + 1);
+              self.caret.set(self.caret.start + 1, self.caret.start + 1);
+              return false;
             }
 
             if (!self.steps[step].valid(symb)) {
               console.log('not_valid');
               self.render();
-              self.set_caret(self.caret.start - 1, self.caret.start - 1);
+              self.caret.set(self.caret.start - 1, self.caret.start - 1);
               return false;
             }
 
@@ -493,7 +496,7 @@ var email_input = /*#__PURE__*/function () {
 
             self.steps[step].set(pos, symb);
             self.render();
-            self.set_caret(self.caret.start, self.caret.start); //console.log('valid');
+            self.caret.set(self.caret.start, self.caret.start); //console.log('valid');
 
             console.log(self.steps);
             break;

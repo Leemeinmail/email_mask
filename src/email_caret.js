@@ -30,9 +30,16 @@ export default class email_caret {
     }
 
     set(p1,p2){
-        this.start = p1;
-        this.end = p2;
-        this.el.setSelectionRange( p1, p2 );
+
+        let self = this;
+
+        self.el.style.caretColor = 'transparent';
+
+        setTimeout(function() {
+            self.el.setSelectionRange( p1, p2 );
+            self.el.style.caretColor = self.el.style.color;
+        },0);
+
     }
 
     init(){
