@@ -159,6 +159,10 @@ export default class email_input {
 
         let self = this;
 
+        self.input.setAttribute('autocorrect', 'off');
+        self.input.setAttribute('autocapitalize', 'off');
+        self.input.setAttribute('autocomplete', 'off');
+        
         self.input.addEventListener('paste', function(evt) {
             evt.preventDefault();
 
@@ -182,9 +186,6 @@ export default class email_input {
 
         self.input.addEventListener('input', function(evt) {
             evt.preventDefault();
-
-            self.input.setAttribute('autocorrect', 'off');
-            self.input.setAttribute('autocapitalize', 'off');
 
             if (!self.status) {
                 self.render();
